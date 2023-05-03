@@ -12,13 +12,17 @@ public class ApiResponse<T> {
 
     private T data;
 
-    private String error;
+    private ErrorDTO error;
 
     public static <T> ApiResponse<T> success(T data) {
         return new ApiResponse<>(true, data, null);
     }
 
-    public static <T> ApiResponse<T> error() {
-        return new ApiResponse<T>(false, null, "error");
+    public static <T> ApiResponse<T> error(ErrorCode errorCode) {
+        return new ApiResponse<T>(false, null, ErrorDTO.of(errorCode));
+    }
+
+    public static <T> ApiResponse<T> error(ErrorCode errorCode, String message) {
+        return new ApiResponse<T>(false, null, ErrorDTO.of(errorCode, message));
     }
 }
