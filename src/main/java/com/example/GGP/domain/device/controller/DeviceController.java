@@ -2,10 +2,7 @@ package com.example.GGP.domain.device.controller;
 
 import com.example.GGP.common.ApiResponse;
 import com.example.GGP.domain.device.service.DeviceService;
-import com.example.GGP.domain.device.service.dto.DeviceEnrollRequest;
-import com.example.GGP.domain.device.service.dto.DeviceInfoResponse;
-import com.example.GGP.domain.device.service.dto.DeviceOptimalRequest;
-import com.example.GGP.domain.device.service.dto.DeviceReserveRequest;
+import com.example.GGP.domain.device.service.dto.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -37,6 +34,14 @@ public class DeviceController {
     @PutMapping("/devices/{deviceId}/off")
     ApiResponse<Object> offDevice(@PathVariable String deviceId) {
         deviceService.putOff(deviceId);
+
+        return ApiResponse.success(null);
+    }
+
+    @PutMapping("/devices/{deviceId}/target")
+    ApiResponse<Object> changeTargetTemperature(@PathVariable String deviceId,
+                                                @RequestBody PutTargetTemperatureRequest request) {
+        deviceService.putTargetTemperature(deviceId, request);
 
         return ApiResponse.success(null);
     }

@@ -1,9 +1,6 @@
 package com.example.GGP.domain.device.service;
 
-import com.example.GGP.domain.device.service.dto.DeviceEnrollRequest;
-import com.example.GGP.domain.device.service.dto.DeviceInfoResponse;
-import com.example.GGP.domain.device.service.dto.DeviceOptimalRequest;
-import com.example.GGP.domain.device.service.dto.DeviceReserveRequest;
+import com.example.GGP.domain.device.service.dto.*;
 
 public interface DeviceService {
     void enroll(DeviceEnrollRequest request);
@@ -21,4 +18,6 @@ public interface DeviceService {
     void putReserve(String deviceId, DeviceReserveRequest request);
 
     void putOptimal(String deviceId, DeviceOptimalRequest request);
+
+    void putTargetTemperature(String deviceId, PutTargetTemperatureRequest request);
 }
