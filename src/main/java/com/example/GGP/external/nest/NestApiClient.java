@@ -21,7 +21,7 @@ public interface NestApiClient {
     Double putTargetTemperature(@RequestHeader("Authorization") String accessToken, @PathVariable String device_id,
                                 @RequestBody TargetTemperatureRequest request);
 
-    @GetMapping("/devices/thermostats/{device_id}/hvac_mode")
+    @PutMapping("/devices/thermostats/{device_id}/hvac_mode")
     String putMode(@RequestHeader("Authorization") String accessToken, @PathVariable String device_id,
                    @RequestBody ModeRequest request);
 }
