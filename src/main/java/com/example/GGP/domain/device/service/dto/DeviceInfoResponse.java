@@ -11,19 +11,19 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class DeviceInfoResponse {
 
-    String mode;
+    private String mode;
 
     @Nullable
-    Double currentTemperature;
+    private Double currentTemperature;
 
     @Nullable
-    Integer targetTemperature;
+    private Integer targetTemperature;
 
     @Nullable
-    String reserveTime;
+    private String reserveTime;
 
     @Nullable
-    String homecomingTime;
+    private String homecomingTime;
 
     public static DeviceInfoResponse of(Device device, Double currentTemperature, Integer targetTemperature) {
         return new DeviceInfoResponse(device.getMode().name(), currentTemperature, targetTemperature,
