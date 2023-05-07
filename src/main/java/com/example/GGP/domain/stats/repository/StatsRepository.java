@@ -10,10 +10,10 @@ import java.util.List;
 
 public interface StatsRepository extends CrudRepository<Stats, StatsId> {
 
-    @Query("select s.id.yearMonth, avg(s.useTime) from Stats s where s.id.yearMonth >= :minusYearMonth group by s.id.yearMonth order by s.id.yearMonth")
-    List<YearMonthUseTimeResponse> getAvgUseTime(String minusYearMonth, String deviceId);
+    @Query("select new com.example.GGP.domain.stats.service.dto.YearMonthUseTimeResponse(s.id.yearAndMonth, cast(avg(s.useTime) as Long)) from Stats s group by s.id.yearAndMonth having s.id.yearAndMonth >= :minusYearMonth order by s.id.yearAndMonth")
+    List<YearMonthUseTimeResponse> getAvgUseTime(String minusYearMonth);
 
 
-    @Query("select s.id.yearMonth, s.useTime from Stats s where s.id.deviceId = :deviceId and s.id.yearMonth >= :minusYearMonth order by s.id.yearMonth")
+    @Query("select new com.example.GGP.domain.stats.service.dto.YearMonthUseTimeResponse(s.id.yearAndMonth, s.useTime) from Stats s where s.id.deviceId = :deviceId and s.id.yearAndMonth >= :minusYearMonth order by s.id.yearAndMonth")
     List<YearMonthUseTimeResponse> getMyUseTime(String minusYearMonth, String deviceId);
 }

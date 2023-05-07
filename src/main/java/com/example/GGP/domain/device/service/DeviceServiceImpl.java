@@ -6,13 +6,22 @@ import com.example.GGP.domain.device.entity.Device;
 import com.example.GGP.domain.device.entity.Mode;
 import com.example.GGP.domain.device.repository.DeviceRepository;
 import com.example.GGP.domain.device.service.dto.*;
+import com.example.GGP.domain.stats.entity.Stats;
+import com.example.GGP.domain.stats.entity.StatsId;
+import com.example.GGP.domain.stats.repository.StatsRepository;
+import com.example.GGP.domain.stats.service.StatsService;
+import com.example.GGP.domain.stats.service.dto.StatsResponse;
 import com.example.GGP.external.nest.NestApiClient;
 import com.example.GGP.external.nest.dto.ModeRequest;
 import com.example.GGP.external.nest.dto.TargetTemperatureRequest;
+import com.example.GGP.external.testnest.TestNestApiClient;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.text.SimpleDateFormat;
+import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Service
@@ -21,7 +30,11 @@ public class DeviceServiceImpl implements DeviceService {
 
     private final DeviceRepository deviceRepository;
 
-    private final NestApiClient nestApiClient;
+    private final StatsService statsService;
+
+    //private final NestApiClient nestApiClient;
+
+    private final TestNestApiClient nestApiClient;
 
     private static final String TOKEN = "token";
 
@@ -73,6 +86,7 @@ public class DeviceServiceImpl implements DeviceService {
         device.setOffTime(LocalDateTime.now().toString());
 
         //통계 추가 하기
+        statsService.addStats(device);
 
         nestApiClient.putMode(TOKEN, deviceId, new ModeRequest("off"));
     }
