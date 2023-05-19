@@ -6,5 +6,5 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 public class DeviceReserveRequest {
-    private String reserveTime;
+    private Integer reserveTime;
 }

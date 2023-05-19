@@ -6,12 +6,9 @@ import com.example.GGP.domain.device.entity.Device;
 import com.example.GGP.domain.device.entity.Mode;
 import com.example.GGP.domain.device.repository.DeviceRepository;
 import com.example.GGP.domain.device.service.dto.*;
-import com.example.GGP.domain.stats.entity.Stats;
-import com.example.GGP.domain.stats.entity.StatsId;
-import com.example.GGP.domain.stats.repository.StatsRepository;
 import com.example.GGP.domain.stats.service.StatsService;
-import com.example.GGP.domain.stats.service.dto.StatsResponse;
-import com.example.GGP.external.nest.NestApiClient;
+import com.example.GGP.external.GGAI.GGAIApiClient;
+import com.example.GGP.external.GGAI.dto.OptimalResponse;
 import com.example.GGP.external.nest.dto.ModeRequest;
 import com.example.GGP.external.nest.dto.TargetTemperatureRequest;
 import com.example.GGP.external.testnest.TestNestApiClient;
@@ -19,9 +16,6 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.text.SimpleDateFormat;
-import java.time.Duration;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Service
@@ -35,6 +29,10 @@ public class DeviceServiceImpl implements DeviceService {
     //private final NestApiClient nestApiClient;
 
     private final TestNestApiClient nestApiClient;
+
+    private final GGAIApiClient ggaiApiClient;
+
+    private final DeviceScheduler deviceScheduler;
 
     private static final String TOKEN = "token";
 
@@ -82,6 +80,10 @@ public class DeviceServiceImpl implements DeviceService {
         Device device = deviceRepository.findById(deviceId)
                 .orElseThrow(() -> new BaseException(ErrorCode.NOTFOUND_DEVICE));
 
+        if (device.getMode() == Mode.RESERVE || device.getMode() == Mode.OPTIMAL) {
+            deviceScheduler.remove(device);
+        }
+
         device.changeMode(Mode.OFF);
         device.setOffTime(LocalDateTime.now().toString());
 
@@ -96,6 +98,10 @@ public class DeviceServiceImpl implements DeviceService {
     public void putManual(String deviceId) {
         Device device = deviceRepository.findById(deviceId)
                 .orElseThrow(() -> new BaseException(ErrorCode.NOTFOUND_DEVICE));
+
+        if (device.getMode() == Mode.RESERVE || device.getMode() == Mode.OPTIMAL) {
+            deviceScheduler.remove(device);
+        }
 
         device.changeMode(Mode.MANUAL);
 
@@ -112,6 +118,10 @@ public class DeviceServiceImpl implements DeviceService {
         Device device = deviceRepository.findById(deviceId)
                 .orElseThrow(() -> new BaseException(ErrorCode.NOTFOUND_DEVICE));
 
+        if (device.getMode() == Mode.RESERVE || device.getMode() == Mode.OPTIMAL) {
+            deviceScheduler.remove(device);
+        }
+
         device.changeMode(Mode.ECO);
 
         nestApiClient.putMode(TOKEN, deviceId, new ModeRequest("eco"));
@@ -123,9 +133,14 @@ public class DeviceServiceImpl implements DeviceService {
         Device device = deviceRepository.findById(deviceId)
                 .orElseThrow(() -> new BaseException(ErrorCode.NOTFOUND_DEVICE));
 
+        if (device.getMode() == Mode.RESERVE || device.getMode() == Mode.OPTIMAL) {
+            deviceScheduler.remove(device);
+        }
+
         device.changeMode(Mode.RESERVE);
 
         //예약 시간 만큼 스케쥴링 돌리기
+        deviceScheduler.register(device, request.getReserveTime(), 10000);
     }
 
     @Override
@@ -134,9 +149,18 @@ public class DeviceServiceImpl implements DeviceService {
         Device device = deviceRepository.findById(deviceId)
                 .orElseThrow(() -> new BaseException(ErrorCode.NOTFOUND_DEVICE));
 
+        if (device.getMode() == Mode.RESERVE || device.getMode() == Mode.OPTIMAL) {
+            deviceScheduler.remove( device);
+        }
+
         device.changeMode(Mode.OPTIMAL);
 
+        Double currentTemperature = nestApiClient.getAmbientTemperature(TOKEN, deviceId);
+
+        OptimalResponse optimalResponse = ggaiApiClient.getOptimalTime(currentTemperature, request.getHomecomingTime());
+
         //최적의 시간만큼 스케쥴링 돌리기
+        deviceScheduler.register(device, optimalResponse.getCoolTime(), optimalResponse.getIter());
     }
 
     @Override
